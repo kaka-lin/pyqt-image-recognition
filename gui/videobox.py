@@ -7,32 +7,36 @@ class ImageViewer(QtWidgets.QWidget):
         super(ImageViewer, self).__init__(parent)
         self.image = QtGui.QImage()
 
-    def paintEvent(self, event):
-        painter = QtGui.QPainter(self)
-        painter.drawImage(0,0, self.image)
-        self.image = QtGui.QImage()
+        self._setup_ui()
 
-    def initUI(self):
+    def _setup_ui(self):
         """ """
 
+    def paintEvent(self, event):
+        painter = QtGui.QPainter(self)
+        painter.drawImage(0, 0, self.image)
+        self.image = QtGui.QImage()
+        
     @QtCore.pyqtSlot(QtGui.QImage)
     def setImage(self, image):
         if image.isNull():
             print("Viewer Dropped frame!")
 
         self.image = image
+        
         if image.size() != self.size():
             self.setFixedSize(image.size())
-
+    
         # QWidgwe.update(self): 
         # calling update() several times normally results in just one paintEvent() call.
-        self.update() 
+        self.update()
 
 class VideoBox(QtWidgets.QGroupBox):
     def __init__(self, parent=None):
         super(VideoBox, self).__init__(parent)
 
         self.image_viewer = ImageViewer()
+        self.video_worker = VideoThread()
     
         self.__threads = None
 
@@ -46,7 +50,6 @@ class VideoBox(QtWidgets.QGroupBox):
 
     def start(self):
         self.__threads = []
-        self.video_worker = VideoThread()
         thread = QtCore.QThread(self)
         self.__threads.append((thread, self.video_worker))
         self.video_worker.moveToThread(thread)

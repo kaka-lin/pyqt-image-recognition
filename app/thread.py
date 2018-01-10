@@ -16,6 +16,9 @@ class VideoThread(QtCore.QThread):
     @QtCore.pyqtSlot()
     def startVideo(self):
         self.camera = cv2.VideoCapture(self.camera_port)
+        #self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+        #self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+        #self.camera.set(cv2.CAP_PROP_FPS, 30)
         self.running = True
         
         while self.running:
@@ -25,10 +28,12 @@ class VideoThread(QtCore.QThread):
                 # OpenCV stores data in BGR format. 
                 # Qt stores data in RGB format.
                 qt_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) # type: np.ndarray
-                height, width, channel = qt_image.shape # (720, 1280, 3)
-                bytesPerLine = 3 * width
-                image = QtGui.QImage(qt_image.data, width, height, QtGui.QImage.Format_RGB888)
-                #image = QtGui.QImage(rgb_image.data, width, height, bytesPerLine, QtGui.QImage.Format_RGB888)
+                qt_image_2 = cv2.resize(qt_image, (640, 480), interpolation=cv2.INTER_AREA)
+                height, width = qt_image_2.shape[:2]
+                bytesPerLine = 3 * width # qt_image.strides[0] = 3 * width
+
+                # QImage.Format_RGB888: 圖使用 8-8-8 24位RGB格式
+                image = QtGui.QImage(qt_image_2.data, width, height, bytesPerLine, QtGui.QImage.Format_RGB888)
 
                 self.image_data.emit(image)
         
