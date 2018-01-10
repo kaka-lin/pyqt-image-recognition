@@ -21,15 +21,7 @@ class MainWindow(QMainWindow):
         
     
     def openFile(self):
-        '''
-        print(__file__) # /Users/kakalin/csv/gui/mainwindow.py
-        print (os.path.dirname(__file__)) # /Users/kakalin/csv/gui
-        print (os.path.abspath(__file__)) # /Users/kakalin/csv/gui/mainwindow.py
-        print (os.path.abspath(os.path.dirname(__file__))) # /Users/kakalin/csv/gui
-        print (os.path.dirname(os.path.abspath(__file__))) # /Users/kakalin/csv/gui
-        '''
-
         dir = os.path.dirname(__file__)
-
         file_name = QFileDialog.getOpenFileName(self, 'Open file', dir)
-        print(file_name)
+        
+        #print(file_name)
