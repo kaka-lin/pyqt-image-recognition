@@ -19,13 +19,12 @@ class VideoThread(QtCore.QThread):
             ret, frame = self.camera.read() # type: np.ndarray
 
             if ret:
-                # OpenCV stores data in Blue-Green-Red format. 
-                # Qt stores data in Red-Green-Blue format. The cmd swaps to
-                # the right format
-                rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) # type: np.ndarray
-                height, width, channel = rgb_image.shape # (720, 1280, 3)
+                # OpenCV stores data in BGR format. 
+                # Qt stores data in RGB format.
+                qt_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) # type: np.ndarray
+                height, width, channel = qt_image.shape # (720, 1280, 3)
                 bytesPerLine = 3 * width
-                image = QtGui.QImage(rgb_image.data, width, height, QtGui.QImage.Format_RGB888)
+                image = QtGui.QImage(qt_image.data, width, height, QtGui.QImage.Format_RGB888)
                 #image = QtGui.QImage(rgb_image.data, width, height, bytesPerLine, QtGui.QImage.Format_RGB888)
 
                 self.image_data.emit(image)
