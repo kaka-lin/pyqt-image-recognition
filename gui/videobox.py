@@ -36,7 +36,7 @@ class VideoBox(QtWidgets.QGroupBox):
         super(VideoBox, self).__init__(parent)
 
         self.image_viewer = ImageViewer()
-        self.video_worker = VideoThread()
+        #self.video_worker = VideoThread()
     
         self.__threads = None
 
@@ -51,17 +51,19 @@ class VideoBox(QtWidgets.QGroupBox):
     def start(self):
         self.__threads = []
         thread = QtCore.QThread(self)
-        self.__threads.append((thread, self.video_worker))
-        self.video_worker.moveToThread(thread)
+        video_worker = VideoThread()
+        self.__threads.append((thread, video_worker))
+        video_worker.moveToThread(thread)
 
-        self.video_worker.image_data.connect(self.image_viewer.setImage)
-        self.video_worker.done_sig.connect(self.on_video_done)
+        video_worker.image_data.connect(self.image_viewer.setImage)
+        video_worker.done_sig.connect(self.on_video_done)
         
-        thread.started.connect(self.video_worker.startVideo)
+        thread.started.connect(video_worker.startVideo)
         thread.start()
     
     def stop(self):
-        self.video_worker.stopVideo()
+        for thread, worker in self.__threads:
+            worker.stopVideo()
     
     @QtCore.pyqtSlot()
     def on_video_done(self):
