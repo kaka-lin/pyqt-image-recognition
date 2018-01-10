@@ -28,7 +28,7 @@ class ImageViewer(QtWidgets.QWidget):
         # calling update() several times normally results in just one paintEvent() call.
         self.update() 
 
-class VideoBox(QtWidgets.QWidget):
+class VideoBox(QtWidgets.QGroupBox):
     def __init__(self, parent=None):
         super(VideoBox, self).__init__(parent)
 
@@ -42,16 +42,29 @@ class VideoBox(QtWidgets.QWidget):
 
     def _setup_ui(self):
         """ """
-        self.ui.gridLayout.addWidget(self.image_viewer, 1, 0, 1, 1)
+        self.ui.gridLayout.addWidget(self.image_viewer, 1, 0, 1, 2)
 
     def start(self):
         self.__threads = []
-        video_worker = VideoThread()
+        self.video_worker = VideoThread()
         thread = QtCore.QThread(self)
-        self.__threads.append((thread, video_worker))
-        video_worker.moveToThread(thread)
+        self.__threads.append((thread, self.video_worker))
+        self.video_worker.moveToThread(thread)
 
-        video_worker.image_data.connect(self.image_viewer.setImage)
-
-        thread.started.connect(video_worker.startVideo)
+        self.video_worker.image_data.connect(self.image_viewer.setImage)
+        self.video_worker.done_sig.connect(self.on_video_done)
+        
+        thread.started.connect(self.video_worker.startVideo)
         thread.start()
+    
+    def stop(self):
+        self.video_worker.stopVideo()
+    
+    @QtCore.pyqtSlot()
+    def on_video_done(self):
+        for thread, worker in self.__threads:
+            thread.quit()
+            thread.wait()
+
+        self.image_viewer.update()
+        print('Video Thread Finished!')

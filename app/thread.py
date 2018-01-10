@@ -5,17 +5,20 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class VideoThread(QtCore.QThread):
     """ This thread is capture video with opencv """
     image_data = QtCore.pyqtSignal(QtGui.QImage)
+    done_sig = QtCore.pyqtSignal()
 
     def __init__(self, camera_port=0, parent=None):
         super(VideoThread, self).__init__(parent)
 
         self.camera_port = camera_port
+        self.running = False
 
     @QtCore.pyqtSlot()
     def startVideo(self):
         self.camera = cv2.VideoCapture(self.camera_port)
+        self.running = True
         
-        while True:
+        while self.running:
             ret, frame = self.camera.read() # type: np.ndarray
 
             if ret:
@@ -28,3 +31,10 @@ class VideoThread(QtCore.QThread):
                 #image = QtGui.QImage(rgb_image.data, width, height, bytesPerLine, QtGui.QImage.Format_RGB888)
 
                 self.image_data.emit(image)
+        
+        self.camera.release()
+        cv2.destroyAllWindows()
+        self.done_sig.emit()
+    
+    def stopVideo(self):
+        self.running = False
