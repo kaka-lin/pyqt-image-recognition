@@ -38,7 +38,7 @@ class ImageViewer(QtWidgets.QWidget):
         # OpenCV stores data in BGR format. 
         # Qt stores data in RGB format.
         image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        image = cv2.resize(image, (28, 28), interpolation=cv2.INTER_AREA)
+        image = cv2.resize(image, (200, 150), interpolation=cv2.INTER_AREA)
 
         height, width = image.shape[:2]
         bytesPerLine = 3 * width # image.strides[0] = 3 * width
@@ -77,6 +77,7 @@ class VideoBox(QtWidgets.QGroupBox):
 
         video_worker.image_data.connect(self.image_viewer.setImage)
         video_worker.done_sig.connect(self.on_video_done)
+        video_worker.predict_sig.connect(self.on_predict_update)
         
         thread.started.connect(video_worker.startVideo)
         thread.start()
@@ -94,3 +95,7 @@ class VideoBox(QtWidgets.QGroupBox):
 
         self.image_viewer.update()
         print('Video Thread Finished!')
+
+    @QtCore.pyqtSlot('QString')
+    def on_predict_update(self, predict):
+        self.ui.predict_label.setText('Predict Label: {0}'.format(predict))

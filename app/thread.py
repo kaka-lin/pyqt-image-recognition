@@ -7,6 +7,7 @@ class VideoThread(QtCore.QThread):
     """ This thread is capture video with opencv """
     image_data = QtCore.pyqtSignal(np.ndarray)
     done_sig = QtCore.pyqtSignal()
+    predict_sig = QtCore.pyqtSignal(['QString'])
 
     def __init__(self, model, camera_port=0, parent=None):
         super(VideoThread, self).__init__(parent)
@@ -24,8 +25,8 @@ class VideoThread(QtCore.QThread):
             ret, frame = self.camera.read()
 
             if ret:
-                self.test(frame)
                 self.image_data.emit(frame)
+                self.test(frame)
         
         self.camera.release()
         cv2.destroyAllWindows()
@@ -44,12 +45,15 @@ class VideoThread(QtCore.QThread):
         image = image.astype('float32')
         image = image / 255
 
-        print('=========================')
+        #print('=========================')
         x_test = image.reshape(1, 28, 28, 1)
 
         scores = self.model.predict(x_test)
         top_label_ix = np.argmax(scores)
-        print("Predict Label: {0}".format(top_label_ix))
-        print('=========================')
+        #print("Predict Label: {0}".format(top_label_ix))
+        #print('=========================')
+
+        top_label_ix = str(top_label_ix)
+        self.predict_sig.emit(top_label_ix)
 
        

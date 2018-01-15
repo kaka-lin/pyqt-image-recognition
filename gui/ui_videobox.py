@@ -13,9 +13,12 @@ class Ui_VideoBox(object):
         self.run_button.setObjectName("run_button")
         self.stop_button = QtWidgets.QPushButton(videoBox)
         self.stop_button.setObjectName("stop_button")
+        self.predict_label = QtWidgets.QLabel(videoBox)
+        self.predict_label.setObjectName("predict_label")
 
         self.gridLayout.addWidget(self.run_button, 0, 0, 1, 1)
         self.gridLayout.addWidget(self.stop_button, 0, 1, 1, 1)
+        self.gridLayout.addWidget(self.predict_label, 2, 0, 1, 2)
         
         self.run_button.clicked.connect(videoBox.start)
         self.stop_button.clicked.connect(videoBox.stop)
