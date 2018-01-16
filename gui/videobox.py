@@ -35,8 +35,6 @@ class ImageViewer(QtWidgets.QWidget):
         self.update()
     
     def get_qt_image(self, frame):
-        # OpenCV stores data in BGR format. 
-        # Qt stores data in RGB format.
         image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         image = cv2.resize(image, (200, 150), interpolation=cv2.INTER_AREA)
 
@@ -76,16 +74,34 @@ class VideoBox(QtWidgets.QGroupBox):
         video_worker.moveToThread(thread)
 
         video_worker.image_data.connect(self.image_viewer.setImage)
+        video_worker.image_data.connect(self.start_predict)
         video_worker.done_sig.connect(self.on_video_done)
-        video_worker.predict_sig.connect(self.on_predict_update)
         
         thread.started.connect(video_worker.startVideo)
         thread.start()
-
     
     def stop(self):
         for thread, worker in self.__threads:
             worker.stopVideo()
+
+    @QtCore.pyqtSlot(np.ndarray)
+    def start_predict(self, frame):
+        gray_image = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        ret, thresh1 = cv2.threshold(gray_image, 127, 255, cv2.THRESH_BINARY_INV)
+        image = cv2.resize(thresh1, (28, 28), interpolation=cv2.INTER_AREA)
+
+        cv2.imwrite('x_test.png', image)
+
+        image = image.reshape(1, 28*28)
+        image = image.astype('float32')
+        image = image / 255
+
+        x_test = image.reshape(1, 28, 28, 1)
+        scores = self.model.predict(x_test)
+        predict = str(np.argmax(scores))
+
+        self.ui.predict_label.setText('Predict Label: {0}'.format(predict))
+        #print('Predict Label: {0}'.format(predict))
     
     @QtCore.pyqtSlot()
     def on_video_done(self):
@@ -95,7 +111,3 @@ class VideoBox(QtWidgets.QGroupBox):
 
         self.image_viewer.update()
         print('Video Thread Finished!')
-
-    @QtCore.pyqtSlot('QString')
-    def on_predict_update(self, predict):
-        self.ui.predict_label.setText('Predict Label: {0}'.format(predict))

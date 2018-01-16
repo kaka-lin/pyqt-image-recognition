@@ -26,7 +26,6 @@ class VideoThread(QtCore.QThread):
 
             if ret:
                 self.image_data.emit(frame)
-                self.test(frame)
         
         self.camera.release()
         cv2.destroyAllWindows()
@@ -34,26 +33,3 @@ class VideoThread(QtCore.QThread):
     
     def stopVideo(self):
         self.running = False
-    
-    def test(self, frame):
-        gray_image = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        ret, thresh1 = cv2.threshold(gray_image, 127, 255, cv2.THRESH_BINARY_INV)
-        
-        image = cv2.resize(thresh1, (28, 28), interpolation=cv2.INTER_AREA)
-        cv2.imwrite('x_test.png', image)
-        image = image.reshape(1, 28*28)
-        image = image.astype('float32')
-        image = image / 255
-
-        #print('=========================')
-        x_test = image.reshape(1, 28, 28, 1)
-
-        scores = self.model.predict(x_test)
-        top_label_ix = np.argmax(scores)
-        #print("Predict Label: {0}".format(top_label_ix))
-        #print('=========================')
-
-        top_label_ix = str(top_label_ix)
-        self.predict_sig.emit(top_label_ix)
-
-       
