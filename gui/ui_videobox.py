@@ -30,5 +30,6 @@ class Ui_VideoBox(object):
         videoBox.setTitle(_translate("VideoBox", "Video Stream"))
         self.run_button.setText(_translate("VideoBox", "Start"))
         self.stop_button.setText(_translate("VideoBox", "Stop"))
+        self.predict_label.setText(_translate("VideoBox", "Predict Label: None"))
         
     

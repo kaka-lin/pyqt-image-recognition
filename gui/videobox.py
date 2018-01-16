@@ -4,8 +4,7 @@ import numpy as np
 from PyQt5 import QtCore, QtGui, QtWidgets
 from gui.ui_videobox import Ui_VideoBox
 from app.thread import VideoThread
-
-from keras.models import Sequential, load_model
+from keras.models import load_model
 
 class ImageViewer(QtWidgets.QWidget):
     def __init__(self, parent = None):
@@ -20,7 +19,7 @@ class ImageViewer(QtWidgets.QWidget):
     def paintEvent(self, event):
         painter = QtGui.QPainter(self)
         painter.drawImage(0, 0, self.image)
-        self.image = QtGui.QImage()
+        #self.image = QtGui.QImage()
         
     @QtCore.pyqtSlot(np.ndarray)
     def setImage(self, frame):
@@ -50,6 +49,7 @@ class VideoBox(QtWidgets.QGroupBox):
         super(VideoBox, self).__init__(parent)
 
         self.image_viewer = ImageViewer()
+
         self.__threads = None
 
         path = sys.path[0]
@@ -57,7 +57,7 @@ class VideoBox(QtWidgets.QGroupBox):
         # 初始化加載模型後，需随便生成一个向量讓model先執行一次predict
         # 之後使用才不會出現 ValueError
         self.model.predict(np.zeros((1, 28, 28, 1)))
-
+        
         self.ui = Ui_VideoBox()
         self.ui.setupUi(self)
         self._setup_ui()
@@ -74,8 +74,8 @@ class VideoBox(QtWidgets.QGroupBox):
         video_worker.moveToThread(thread)
 
         video_worker.image_data.connect(self.image_viewer.setImage)
-        video_worker.image_data.connect(self.start_predict)
         video_worker.done_sig.connect(self.on_video_done)
+        video_worker.predict_sig.connect(self.update_lable)
         
         thread.started.connect(video_worker.startVideo)
         thread.start()
@@ -83,25 +83,6 @@ class VideoBox(QtWidgets.QGroupBox):
     def stop(self):
         for thread, worker in self.__threads:
             worker.stopVideo()
-
-    @QtCore.pyqtSlot(np.ndarray)
-    def start_predict(self, frame):
-        gray_image = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        ret, thresh1 = cv2.threshold(gray_image, 127, 255, cv2.THRESH_BINARY_INV)
-        image = cv2.resize(thresh1, (28, 28), interpolation=cv2.INTER_AREA)
-
-        cv2.imwrite('x_test.png', image)
-
-        image = image.reshape(1, 28*28)
-        image = image.astype('float32')
-        image = image / 255
-
-        x_test = image.reshape(1, 28, 28, 1)
-        scores = self.model.predict(x_test)
-        predict = str(np.argmax(scores))
-
-        self.ui.predict_label.setText('Predict Label: {0}'.format(predict))
-        #print('Predict Label: {0}'.format(predict))
     
     @QtCore.pyqtSlot()
     def on_video_done(self):
@@ -109,5 +90,11 @@ class VideoBox(QtWidgets.QGroupBox):
             thread.quit()
             thread.wait()
 
+        self.image_viewer.image = QtGui.QImage()
         self.image_viewer.update()
         print('Video Thread Finished!')
+    
+    @QtCore.pyqtSlot('QString')
+    def update_lable(self, label):
+        print('Predict Label: {0}'.format(label))
+        self.ui.predict_label.setText('Predict Label: {0}'.format(label))

@@ -11,3 +11,7 @@ venv/
 ._.DS_Store
 
 *.png
+
+# model
+*.pb
+*.pbtxt
