@@ -10,8 +10,6 @@ venv/
 .DS_Store
 ._.DS_Store
 
-*.png
-
 # model
 *.pb
 *.pbtxt
