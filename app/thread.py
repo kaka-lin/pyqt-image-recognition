@@ -1,6 +1,10 @@
+import time
+
 import cv2
 import numpy as np
 from PyQt5 import QtCore, QtGui, QtWidgets
+import torch
+import torchvision.transforms as transforms
 
 class VideoThread(QtCore.QThread):
     """ This thread is capture video with opencv """
@@ -8,10 +12,11 @@ class VideoThread(QtCore.QThread):
     done_sig = QtCore.pyqtSignal()
     predict_sig = QtCore.pyqtSignal('QString')
 
-    def __init__(self, model, camera_port=0, parent=None):
+    def __init__(self, model, model_name, camera_port=0, parent=None):
         super(VideoThread, self).__init__(parent)
 
         self.model = model
+        self.model_name = model_name
         self.camera_port = camera_port
         self.running = False
 
@@ -45,9 +50,17 @@ class VideoThread(QtCore.QThread):
         image = image.astype('float32')
         image = image / 255
 
-        x_test = image.reshape(1, 28, 28, 1)
-        scores = self.model.predict(x_test)
-        predict = str(np.argmax(scores))
+        if self.model_name == 'BNN':
+            x_test = image.reshape(1, 1, 28, 28)
+            x_test = torch.from_numpy(x_test)
+
+            self.model.eval()
+            output = self.model(x_test)
+            predict = str((output.max(1, keepdim=True)[1]).item())
+        else:
+            x_test = image.reshape(1, 28, 28, 1)
+            scores = self.model.predict(x_test)
+            predict = str(np.argmax(scores))
 
         self.predict_sig.emit(predict)
 

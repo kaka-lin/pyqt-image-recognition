@@ -1,10 +1,19 @@
+import os
 import sys
+
 import cv2
 import numpy as np
 from PyQt5 import QtCore, QtGui, QtWidgets
+from keras.models import load_model
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
+
 from gui.ui_videobox import Ui_VideoBox
 from app.thread import VideoThread
-from keras.models import load_model
+from models.models import CNN, BNN
+from utils import *
 
 class ImageViewer(QtWidgets.QWidget):
     def __init__(self, parent = None):
@@ -49,14 +58,8 @@ class VideoBox(QtWidgets.QGroupBox):
         super(VideoBox, self).__init__(parent)
 
         self.image_viewer = ImageViewer()
-
         self.__threads = None
-
-        path = sys.path[0]
-        self.model = load_model(path + '/cnn_demo_model.h5')
-        # 初始化加載模型後，需随便生成一个向量讓model先執行一次predict
-        # 之後使用才不會出現 ValueError
-        self.model.predict(np.zeros((1, 28, 28, 1)))
+        self.model = None
         
         self.ui = Ui_VideoBox()
         self.ui.setupUi(self)
@@ -67,9 +70,11 @@ class VideoBox(QtWidgets.QGroupBox):
         self.ui.gridLayout.addWidget(self.image_viewer, 1, 0, 1, 2)
 
     def start(self):
+        model_name = self.choice_model()
+
         self.__threads = []
         thread = QtCore.QThread(self)
-        video_worker = VideoThread(self.model)
+        video_worker = VideoThread(self.model, model_name)
         self.__threads.append((thread, video_worker))
         video_worker.moveToThread(thread)
 
@@ -98,3 +103,27 @@ class VideoBox(QtWidgets.QGroupBox):
     def update_lable(self, label):
         print('Predict Label: {0}'.format(label))
         self.ui.predict_label.setText('Predict Label: {0}'.format(label))
+    
+    def choice_model(self):
+        model_name = self.ui.combobox.currentText()
+        path = os.path.join(sys.path[0], 'models/pre_trains/')
+
+        if model_name == 'BNN':
+            # Load model    
+            self.model = BNN()
+            self.loss = nn.CrossEntropyLoss()
+            self.optimizer = optim.Adam(self.model.parameters())
+            
+            path = os.path.join(sys.path[0], 'models/pre_trains/')    
+            checkpoint = torch.load(path + 'binary_model_checkpoint.tar')
+            self.model.load_state_dict(checkpoint['model_state_dict'])
+            self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+            self.epoch = checkpoint['epoch']
+            self.loss = checkpoint['loss']
+        else:
+            self.model = load_model(path + 'cnn_demo_model.h5')
+            # 初始化加載模型後，需随便生成一个向量讓model先執行一次predict
+            # 之後使用才不會出現 ValueError
+            self.model.predict(np.zeros((1, 28, 28, 1)))
+        
+        return model_name

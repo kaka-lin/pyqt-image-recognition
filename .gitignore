@@ -13,3 +13,5 @@ venv/
 # model
 *.pb
 *.pbtxt
+
+x_test.png
