@@ -3,7 +3,7 @@ import sys
 
 import cv2
 import numpy as np
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PySide2 import QtCore, QtGui, QtWidgets
 from keras.models import load_model
 import torch
 import torch.nn as nn
@@ -14,6 +14,10 @@ from gui.ui_videobox import Ui_VideoBox
 from app.thread import VideoThread
 from models.models import CNN, BNN
 from utils import *
+
+# PyQt5 -> PySide2
+QtCore.pyqtSignal = QtCore.Signal
+QtCore.pyqtSlot = QtCore.Slot
 
 class ImageViewer(QtWidgets.QWidget):
     def __init__(self, parent = None):

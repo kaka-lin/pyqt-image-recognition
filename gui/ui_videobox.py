@@ -1,5 +1,5 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QFileDialog, QSizePolicy
+from PySide2 import QtCore, QtGui, QtWidgets
+from PySide2.QtWidgets import QFileDialog, QSizePolicy
 
 class Ui_VideoBox(object):
     def setupUi(self, videoBox):

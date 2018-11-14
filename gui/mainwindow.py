@@ -1,5 +1,5 @@
 import os, sys
-from PyQt5.QtWidgets import QMainWindow, QFileDialog
+from PySide2.QtWidgets import QMainWindow, QFileDialog
 from gui.ui_mainwindow import Ui_MainWindow
 from gui.mnist_tab import MnistTab
 
