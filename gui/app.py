@@ -1,6 +1,6 @@
 import sys
-from PyQt5.QtCore import QTranslator, QLocale
-from PyQt5.QtWidgets import QApplication
+from PySide2.QtCore import QTranslator, QLocale
+from PySide2.QtWidgets import QApplication
 from gui.mainwindow import MainWindow
 
 def run():

@@ -1,4 +1,4 @@
-PyQt5>=5.9.2
+PySide2 >= 5.11.2
 numpy>=1.14.0, <=1.14.6
 opencv-python>=3.4.0.12, <=3.4.3.18
 tensorflow>=1.4.1

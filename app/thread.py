@@ -2,9 +2,13 @@ import time
 
 import cv2
 import numpy as np
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PySide2 import QtCore, QtGui, QtWidgets
 import torch
 import torchvision.transforms as transforms
+
+# PyQt5 -> PySide2
+QtCore.pyqtSignal = QtCore.Signal
+QtCore.pyqtSlot = QtCore.Slot
 
 class VideoThread(QtCore.QThread):
     """ This thread is capture video with opencv """
