@@ -51,6 +51,8 @@ class VideoThread(QtCore.QThread):
         image = image / 255
 
         if self.model_name == 'BNN':
+            # Normalize
+            image = ((image - 0.1307) / 0.3081)
             x_test = image.reshape(1, 1, 28, 28)
             x_test = torch.from_numpy(x_test)
 
